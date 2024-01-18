@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caro Game</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(15, 40px);
+            gap: 2px;
+        }
+
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+
+    <script>
+        const SIZE = 15;
+        let board = new Array(SIZE).fill(null).map(() => new Array(SIZE).fill(''));
+        let currentPlayer = 'X';
+
+        function createBoard() {
+            const boardElement = document.getElementById('board');
+
+            for (let i = 0; i < SIZE; i++) {
+                for (let j = 0; j < SIZE; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.addEventListener('click', () => handleCellClick(i, j));
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        function renderBoard() {
+            const cells = document.querySelectorAll('.cell');
+
+            cells.forEach((cell, index) => {
+                const row = Math.floor(index / SIZE);
+                const col = index % SIZE;
+                cell.textContent = board[row][col];
+            });
+        }
+
+        function handleCellClick(row, col) {
+            if (board[row][col] === '') {
+                board[row][col] = currentPlayer;
+                renderBoard();
+
+                if (checkWin(row, col, currentPlayer)) {
+                    alert(`Player ${currentPlayer} wins!`);
+                    resetGame();
+                } else if (checkDraw()) {
+                    alert("It's a draw!");
+                    resetGame();
+                } else {
+                    currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
+                }
+            }
+        }
+
+        function checkWin(row, col, player) {
+            return (
+                checkDirection(row, col, player, 1, 0) || // Ngang
+                checkDirection(row, col, player, 0, 1) || // Dọc
+                checkDirection(row, col, player, 1, 1) || // Chéo chính
+                checkDirection(row, col, player, 1, -1)   // Chéo phụ
+            );
+        }
+
+        function checkDirection(row, col, player, rowDirection, colDirection) {
+            let count = 1;
+
+            // Kiểm tra hướng hiện tại
+            for (let i = 1; i < 5; i++) {
+                const newRow = row + i * rowDirection;
+                const newCol = col + i * colDirection;
+
+                if (isValidIndex(newRow, newCol) && board[newRow][newCol] === player) {
+                    count++;
+                } else {
+                    break;
+                }
+            }
+
+            // Kiểm tra hướng ngược lại
+            for (let i = 1; i < 5; i++) {
+                const newRow = row - i * rowDirection;
+                const newCol = col - i * colDirection;
+
+                if (isValidIndex(newRow, newCol) && board[newRow][newCol] === player) {
+                    count++;
+                } else {
+                    break;
+                }
+            }
+
+            return count >= 5;
+        }
+
+        function checkDraw() {
+            for (let i = 0; i < SIZE; i++) {
+                for (let j = 0; j < SIZE; j++) {
+                    if (board[i][j] === '') {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function isValidIndex(row, col) {
+            return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
+        }
+
+        function resetGame() {
+            board = new Array(SIZE).fill(null).map(() => new Array(SIZE).fill(''));
+            currentPlayer = 'X';
+            renderBoard();
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
